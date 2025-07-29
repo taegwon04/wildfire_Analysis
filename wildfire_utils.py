@@ -1,4 +1,3 @@
-
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.ensemble import RandomForestClassifier
@@ -17,7 +16,12 @@ model_options = {
 
 # 학습 함수
 def train_model(model, X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    # NaN 제거
+    df_clean = pd.concat([X, y], axis=1).dropna()
+    X_clean = df_clean.iloc[:, :-1]
+    y_clean = df_clean.iloc[:, -1]
+
+    X_train, X_test, y_train, y_test = train_test_split(X_clean, y_clean, test_size=0.3, random_state=42)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
@@ -60,9 +64,11 @@ def start_student_interface(df):
 
     feature_selector = widgets.SelectMultiple(
         options=feature_options,
-        value=('Temp_pre_7', 'Wind_pre_7'),
-        description='📊 변수선택:',
-        rows=5
+        value=('Temp_pre_7', 'Wind_pre_7', 'remoteness'),
+        description='📊 변수선택 (3개):',
+        rows=5,
+        style={'description_width': '150px'},
+        layout=widgets.Layout(width='400px')
     )
 
     model_radio = widgets.RadioButtons(
@@ -78,8 +84,8 @@ def start_student_interface(df):
         with output:
             output.clear_output()
             selected = list(feature_selector.value)
-            if len(selected) < 1:
-                print("⚠️ 변수 하나 이상 선택하세요.")
+            if len(selected) != 3:
+                print("⚠️ 변수는 정확히 3개 선택해야 합니다.")
                 return
 
             model_name = model_radio.value
