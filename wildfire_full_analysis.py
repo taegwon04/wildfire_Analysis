@@ -3,16 +3,16 @@ import time
 from geopy.geocoders import Nominatim
 import folium
 
-# ✅ 1. GitHub에 있는 CSV 불러오기
+# GitHub에 있는 CSV 불러오기
 csv_url = "https://raw.githubusercontent.com/taegwon04/wildfire_Analysis/main/wildfire_data.csv"
 df = pd.read_csv(csv_url, encoding='cp949')
 
-# ✅ 2. 데이터 정제
+# 데이터 정제
 df['예보일시'] = pd.to_datetime(df['예보일시'])
 df_sorted = df.sort_values(by='예보일시', ascending=False)
 df_recent = df_sorted.head(500)
 
-# ✅ 3. 주소 → 위경도 변환
+# 주소 → 위경도 변환
 geolocator = Nominatim(user_agent="wildfire_alerts")
 coord_cache = {}
 
@@ -36,7 +36,7 @@ unique_addresses = df_recent[['주소']].drop_duplicates().reset_index(drop=True
 unique_addresses[['lat', 'lon']] = unique_addresses['주소'].apply(get_location)
 df_recent = pd.merge(df_recent, unique_addresses, on='주소', how='left')
 
-# ✅ 4. 지도 시각화
+# 지도 시각화
 m = folium.Map(location=[36.5, 127.8], zoom_start=7)
 
 for idx, row in df_recent.iterrows():
@@ -54,6 +54,7 @@ for idx, row in df_recent.iterrows():
 
 m.save("wildfire_alerts_map.html")
 
-# ✅ 5. Colab에 지도 표시
+# Colab에 지도 표시
 from IPython.display import IFrame
 IFrame("wildfire_alerts_map.html", width=1000, height=600)
+
